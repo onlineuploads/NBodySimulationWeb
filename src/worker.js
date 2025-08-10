@@ -52,6 +52,7 @@ const indexHTML = `<!DOCTYPE html>
     <div class="container">
         <header>
             <h1>N-Body Gravity Simulator</h1>
+            <p>Interactive physics simulation with real-time particle dynamics</p>
         </header>
         
         <div class="main-content">
@@ -70,12 +71,18 @@ const indexHTML = `<!DOCTYPE html>
                 <div class="control-group">
                     <h3>Physics Parameters</h3>
                     <label>
-                        Time Step: <input type="range" id="timeStepSlider" min="0.001" max="0.1" step="0.001" value="0.01">
-                        <span id="timeStepValue">0.01</span>
+                        Time Step
+                        <div class="slider-container">
+                            <input type="range" id="timeStepSlider" min="0.001" max="0.1" step="0.001" value="0.01">
+                            <span class="slider-value" id="timeStepValue">0.01</span>
+                        </div>
                     </label>
                     <label>
-                        Softening: <input type="range" id="softeningSlider" min="0.1" max="5.0" step="0.1" value="1.0">
-                        <span id="softeningValue">1.0</span>
+                        Softening
+                        <div class="slider-container">
+                            <input type="range" id="softeningSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+                            <span class="slider-value" id="softeningValue">1.0</span>
+                        </div>
                     </label>
                 </div>
                 
@@ -90,20 +97,23 @@ const indexHTML = `<!DOCTYPE html>
                 <div class="control-group">
                     <h3>Diagnostics</h3>
                     <div id="energyDisplay">
-                        <div>Kinetic Energy: <span id="kineticEnergy">0</span></div>
-                        <div>Potential Energy: <span id="potentialEnergy">0</span></div>
-                        <div>Total Energy: <span id="totalEnergy">0</span></div>
-                        <div>Linear Momentum: <span id="linearMomentum">0</span></div>
+                        <div><span class="energy-label">Kinetic Energy</span><span id="kineticEnergy">0.00</span></div>
+                        <div><span class="energy-label">Potential Energy</span><span id="potentialEnergy">0.00</span></div>
+                        <div><span class="energy-label">Total Energy</span><span id="totalEnergy">0.00</span></div>
+                        <div><span class="energy-label">Linear Momentum</span><span id="linearMomentum">0.00</span></div>
                     </div>
                 </div>
                 
                 <div class="control-group">
                     <h3>View Controls</h3>
                     <label>
-                        Zoom: <input type="range" id="zoomSlider" min="0.1" max="5.0" step="0.1" value="1.0">
-                        <span id="zoomValue">1.0</span>
+                        Zoom
+                        <div class="slider-container">
+                            <input type="range" id="zoomSlider" min="0.1" max="5.0" step="0.1" value="1.0">
+                            <span class="slider-value" id="zoomValue">1.0</span>
+                        </div>
                     </label>
-                    <label>
+                    <label class="checkbox-label">
                         <input type="checkbox" id="showTrailsCheckbox" checked> Show Trails
                     </label>
                 </div>
@@ -111,7 +121,7 @@ const indexHTML = `<!DOCTYPE html>
         </div>
         
         <footer>
-            <p>Click on canvas to add particles. Hold Shift and click to add larger masses.</p>
+            <p class="instruction">Click on canvas to add particles • Hold Shift for larger masses • Drag to pan • Scroll to zoom</p>
         </footer>
     </div>
     
@@ -121,52 +131,65 @@ const indexHTML = `<!DOCTYPE html>
 </body>
 </html>`;
 
-const stylesCSS = `* {
+const stylesCSS = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0a0a0a;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0a0a;
     color: #ffffff;
     overflow-x: hidden;
+    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 24px;
+    min-height: 100vh;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 header h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 10px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+}
+
+header p {
+    color: #888888;
+    font-size: 1rem;
+    font-weight: 400;
 }
 
 .main-content {
-    display: flex;
-    gap: 30px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
+    align-items: start;
+    min-height: calc(100vh - 200px);
 }
 
 .canvas-container {
-    flex: 1;
-    background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1a 100%);
-    border: 2px solid #333;
-    border-radius: 10px;
-    padding: 10px;
+    background: #111111;
+    border: 1px solid #222222;
+    border-radius: 12px;
+    padding: 16px;
     position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 #simulationCanvas {
@@ -175,71 +198,128 @@ header h1 {
     background: transparent;
     cursor: crosshair;
     border-radius: 8px;
+    transition: opacity 0.2s ease;
+}
+
+#simulationCanvas:hover {
+    opacity: 0.95;
 }
 
 .controls {
-    width: 300px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 20px;
+    background: #111111;
+    border: 1px solid #222222;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    height: fit-content;
+    position: sticky;
+    top: 24px;
 }
 
 .control-group {
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .control-group:last-child {
     border-bottom: none;
     margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .control-group h3 {
-    color: #4f46e5;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
+    color: #ffffff;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.9;
 }
 
 button {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #ffffff;
+    padding: 10px 16px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    margin: 4px;
-    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 4px 4px 4px 0;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.01em;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 button:hover {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: #2a2a2a;
+    border-color: #3a3a3a;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 button:active {
     transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 label {
     display: block;
-    margin-bottom: 12px;
-    font-size: 0.9rem;
-    color: #e5e7eb;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    color: #cccccc;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+label:hover {
+    color: #ffffff;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.slider-value {
+    min-width: 48px;
+    text-align: right;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.8rem;
+    color: #888888;
+    background: #1a1a1a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #2a2a2a;
 }
 
 input[type="range"] {
-    width: 100%;
-    margin: 8px 0;
+    flex: 1;
+    margin: 0;
     -webkit-appearance: none;
-    height: 6px;
-    border-radius: 3px;
-    background: #333;
+    height: 4px;
+    border-radius: 2px;
+    background: #2a2a2a;
     outline: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+input[type="range"]:hover {
+    background: #333333;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -248,83 +328,215 @@ input[type="range"]::-webkit-slider-thumb {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    background: #ffffff;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+    border: 2px solid #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: all 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
 }
 
 input[type="range"]::-moz-range-thumb {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    background: #ffffff;
     cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+    border: 2px solid #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 input[type="checkbox"] {
-    margin-right: 8px;
-    transform: scale(1.2);
+    margin-right: 12px;
+    width: 16px;
+    height: 16px;
+    accent-color: #ffffff;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
 }
 
 #energyDisplay {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    padding: 16px;
     border-radius: 8px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
-    line-height: 1.6;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    font-feature-settings: 'tnum';
 }
 
 #energyDisplay div {
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#energyDisplay div:last-child {
+    margin-bottom: 0;
+}
+
+.energy-label {
+    color: #888888;
+    font-weight: 500;
 }
 
 #energyDisplay span {
-    color: #06b6d4;
-    font-weight: bold;
+    color: #ffffff;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 footer {
     text-align: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    color: #9ca3af;
-    font-size: 0.9rem;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: #666666;
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.instruction {
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.instruction:hover {
+    opacity: 1;
 }
 
 @media (max-width: 1024px) {
     .main-content {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        gap: 24px;
     }
     
     .controls {
-        width: 100%;
+        position: static;
+        order: -1;
     }
     
     #simulationCanvas {
         height: 400px;
     }
+    
+    .control-group {
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+    }
 }
 
 @media (max-width: 768px) {
     .container {
-        padding: 10px;
+        padding: 16px;
+    }
+    
+    header {
+        margin-bottom: 32px;
     }
     
     header h1 {
         font-size: 2rem;
     }
     
+    header p {
+        font-size: 0.9rem;
+    }
+    
     .controls {
-        padding: 15px;
+        padding: 20px;
+    }
+    
+    .control-group {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+    }
+    
+    button {
+        padding: 12px 16px;
+        font-size: 0.9rem;
     }
     
     #simulationCanvas {
         height: 300px;
     }
+    
+    .canvas-container {
+        padding: 12px;
+    }
+}
+
+/* Smooth transitions for interactive elements */
+* {
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* Subtle animation on load */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container > * {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+header {
+    animation-delay: 0.1s;
+}
+
+.main-content {
+    animation-delay: 0.2s;
+}
+
+footer {
+    animation-delay: 0.3s;
+}
+
+/* Button group styling */
+.control-group button:first-of-type {
+    margin-left: 0;
+}
+
+/* Improved button states */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+}
+
+button:disabled:hover {
+    background: #1a1a1a;
+    border-color: #2a2a2a;
+    transform: none;
+    box-shadow: none;
 }`;
 
 const physicsJS = `class NBodyPhysics {
@@ -605,20 +817,6 @@ const rendererJS = `class SimulationRenderer {
     clear() {
         this.ctx.fillStyle = '#0a0a0a';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Draw stars background
-        this.ctx.fillStyle = '#ffffff';
-        for (let i = 0; i < 100; i++) {
-            const x = Math.random() * this.canvas.width;
-            const y = Math.random() * this.canvas.height;
-            const size = Math.random() * 1.5;
-            
-            this.ctx.globalAlpha = Math.random() * 0.8 + 0.2;
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, size, 0, 2 * Math.PI);
-            this.ctx.fill();
-        }
-        this.ctx.globalAlpha = 1.0;
     }
     
     render(particles) {
@@ -648,31 +846,20 @@ const rendererJS = `class SimulationRenderer {
         // Draw particles
         for (const particle of particles) {
             const pos = this.worldToScreen(particle.x, particle.y);
-            const radius = Math.max(2, Math.sqrt(particle.mass) * this.zoom * 2);
+            const radius = Math.max(2, Math.sqrt(particle.mass) * this.zoom * 1.5);
             
-            // Glow effect
-            const gradient = this.ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, radius * 2);
-            gradient.addColorStop(0, 'rgba(255, 200, 100, 0.8)');
-            gradient.addColorStop(0.3, 'rgba(255, 150, 50, 0.6)');
-            gradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
-            
-            this.ctx.fillStyle = gradient;
-            this.ctx.beginPath();
-            this.ctx.arc(pos.x, pos.y, radius * 2, 0, 2 * Math.PI);
-            this.ctx.fill();
-            
-            // Core particle
-            this.ctx.fillStyle = particle.mass > 20 ? '#ffff00' : '#ffffff';
+            // Core particle - clean solid circle
+            this.ctx.fillStyle = particle.mass > 20 ? '#ffffff' : '#cccccc';
             this.ctx.beginPath();
             this.ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
             this.ctx.fill();
             
-            // Mass indicator for larger bodies
+            // Subtle outline for larger bodies
             if (particle.mass > 10) {
                 this.ctx.strokeStyle = '#ffffff';
                 this.ctx.lineWidth = 1;
                 this.ctx.beginPath();
-                this.ctx.arc(pos.x, pos.y, radius + 2, 0, 2 * Math.PI);
+                this.ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
                 this.ctx.stroke();
             }
         }
