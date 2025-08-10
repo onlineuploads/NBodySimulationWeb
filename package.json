@@ -1,0 +1,22 @@
+{
+  "name": "nbody-gravity-simulator",
+  "version": "1.0.0",
+  "description": "N-Body Gravity Simulator deployed as Cloudflare Worker",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "wrangler": "^3.0.0"
+  },
+  "keywords": [
+    "physics",
+    "simulation",
+    "gravity",
+    "cloudflare-workers"
+  ],
+  "author": "",
+  "license": "MIT"
+}
