@@ -547,7 +547,7 @@ const physicsJS = `class NBodyPhysics {
         this.G = 100.0; // Gravitational constant (scaled for simulation)
     }
     
-    createParticle(x, y, vx = 0, vy = 0, mass = 1.0) {
+    createParticle(x, y, vx = 0, vy = 0, mass = 1.0, color = null) {
         return {
             x: x,
             y: y,
@@ -556,8 +556,19 @@ const physicsJS = `class NBodyPhysics {
             ax: 0,
             ay: 0,
             mass: mass,
+            color: color || this.generateRandomColor(),
             trail: []
         };
+    }
+    
+    generateRandomColor() {
+        const colors = [
+            '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7',
+            '#dda0dd', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3',
+            '#ff9f43', '#ee5a52', '#0abde3', '#10ac84', '#f368e0',
+            '#3742fa', '#2f3542', '#ff3838', '#2ed573', '#ffa502'
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
     }
     
     addParticle(particle) {
@@ -824,11 +835,14 @@ const rendererJS = `class SimulationRenderer {
         
         // Draw trails
         if (this.showTrails) {
-            this.ctx.strokeStyle = 'rgba(100, 150, 255, 0.3)';
             this.ctx.lineWidth = 1;
             
             for (const particle of particles) {
                 if (particle.trail.length > 1) {
+                    // Use particle's color for trail with transparency
+                    const rgb = this.hexToRgb(particle.color);
+                    this.ctx.strokeStyle = \`rgba(\${rgb.r}, \${rgb.g}, \${rgb.b}, 0.4)\`;
+                    
                     this.ctx.beginPath();
                     for (let i = 0; i < particle.trail.length; i++) {
                         const point = this.worldToScreen(particle.trail[i].x, particle.trail[i].y);
@@ -848,8 +862,8 @@ const rendererJS = `class SimulationRenderer {
             const pos = this.worldToScreen(particle.x, particle.y);
             const radius = Math.max(2, Math.sqrt(particle.mass) * this.zoom * 1.5);
             
-            // Core particle - clean solid circle
-            this.ctx.fillStyle = particle.mass > 20 ? '#ffffff' : '#cccccc';
+            // Core particle with random color
+            this.ctx.fillStyle = particle.color;
             this.ctx.beginPath();
             this.ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
             this.ctx.fill();
@@ -883,6 +897,15 @@ const rendererJS = `class SimulationRenderer {
     
     setShowTrails(show) {
         this.showTrails = show;
+    }
+    
+    hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 255, g: 255, b: 255 };
     }
 }`;
 
